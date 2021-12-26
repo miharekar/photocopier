@@ -5,8 +5,8 @@ Sequel.migration do
     create_table(:photos) do
       primary_key :id
       String :file_name, null: false
-      String :model, null: false
-      DateTime :date_time_original_civil, null: false
+      String :model
+      DateTime :created_at, null: false
       DateTime :imported_at
     end
   end

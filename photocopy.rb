@@ -3,30 +3,48 @@
 require "bundler"
 Bundler.require
 
-# createdb photocopier
-# sequel -m migrations/ postgres://localhost/photocopier
 DB = Sequel.connect(adapter: :postgres, database: "photocopier", host: "localhost")
 
 class Photo < Sequel::Model
-  def self.create_from_exif(hash)
+  def self.create_from_exif(exif_photo)
     find_or_create(
-      file_name: hash[:file_name],
-      model: hash[:model],
-      date_time_original_civil: hash[:date_time_original_civil]
+      file_name: exif_photo[:file_name],
+      model: exif_photo[:model],
+      created_at: exif_photo.created_at
     )
   end
 
-  def self.find_from_exif(hash)
+  def self.find_from_exif(exif_photo)
     first(
-      file_name: hash[:file_name],
-      model: hash[:model],
-      date_time_original_civil: hash[:date_time_original_civil]
+      file_name: exif_photo[:file_name],
+      model: exif_photo[:model],
+      created_at: exif_photo.created_at
     )
   end
 
   def imported?
     !imported_at.nil?
   end
+end
+
+class ExifPhoto
+  extend Forwardable
+
+  attr_reader :exif
+
+  def initialize(exif)
+    @exif = exif.to_hash
+  end
+
+  def created_at
+    exif[:date_time_original_civil] || exif[:create_date_civil]
+  end
+
+  def file_name
+    exif[:original_file_name] || exif[:file_name]
+  end
+
+  def_delegator :exif, :[]
 end
 
 volumes = Dir.entries("/Volumes").reject { |f| f.start_with?(".") }
@@ -44,12 +62,12 @@ folders.each do |folder|
 end
 exif = Exiftool.new(photos)
 locations = photos.filter_map do |photo|
-  hash = exif.result_for(photo).to_hash
-  foto = Photo.find_from_exif(hash)
+  exif_photo = ExifPhoto.new(exif.result_for(photo))
+  foto = Photo.find_from_exif(exif_photo)
   next if foto&.imported?
 
-  date = hash[:date_time_original_civil].strftime("%Y-%m-%d")
-  model = hash[:model]
+  date = exif_photo.created_at.strftime("%Y-%m-%d")
+  model = exif_photo[:model]
   "#{date}|#{model}"
 end.uniq
 
@@ -76,14 +94,14 @@ progressbar = ProgressBar.create(
 )
 
 photos.each do |photo|
-  hash = exif.result_for(photo).to_hash
-  foto = Photo.create_from_exif(hash)
+  exif_photo = ExifPhoto.new(exif.result_for(photo))
+  foto = Photo.create_from_exif(exif_photo)
   unless foto.imported?
-    date = hash[:date_time_original_civil].strftime("%Y-%m-%d")
-    model = hash[:model]
+    date = exif_photo.created_at.strftime("%Y-%m-%d")
+    model = exif_photo[:model]
     location = "#{date}|#{model}"
     if destinations[location]
-      destination = "#{destinations[location]}/#{hash[:original_file_name]}"
+      destination = "#{destinations[location]}/#{exif_photo.file_name}"
       FileUtils.cp(photo, destination)
       foto.update(imported_at: Time.now)
     end
