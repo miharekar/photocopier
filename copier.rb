@@ -77,7 +77,7 @@ class Copier
     progressbar = create_progressbar
     images.each do |image|
       image_exif = ImageExif.new(exif_data.result_for(image))
-      photo = Photo.create_from_exif(image_exif)
+      photo = Photo.from_exif(image_exif)
       unless photo.imported?
         date = image_exif.created_at.strftime("%Y-%m-%d")
         model = image_exif[:model]

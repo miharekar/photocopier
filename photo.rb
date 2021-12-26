@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
 class Photo < Sequel::Model
-  def self.create_from_exif(exif_photo)
+  def self.from_exif(image_exif)
     find_or_create(
-      file_name: exif_photo[:file_name],
-      model: exif_photo[:model],
-      created_at: exif_photo.created_at
+      file_name: image_exif.file_name,
+      model: image_exif[:model],
+      created_at: image_exif.created_at
     )
   end
 
-  def self.find_from_exif(exif_photo)
+  def self.find_from_exif(image_exif)
     first(
-      file_name: exif_photo[:file_name],
-      model: exif_photo[:model],
-      created_at: exif_photo.created_at
+      file_name: image_exif.file_name,
+      model: image_exif[:model],
+      created_at: image_exif.created_at
     )
   end
 
