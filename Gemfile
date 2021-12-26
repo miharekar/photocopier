@@ -8,7 +8,8 @@ gem "exiftool"
 gem "sequel"
 gem "pg"
 gem "pry"
-gem "rubocop"
-gem "rubocop-performance"
-gem "rubocop-sequel"
 gem "ruby-progressbar"
+
+gem "rubocop", require: false
+gem "rubocop-performance", require: false
+gem "rubocop-sequel", require: false
