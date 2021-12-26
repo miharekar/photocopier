@@ -29,3 +29,4 @@ Then you can run it with `ruby photocopy.rb`
 Tested with:
 - Leica Q2
 - DJI Air 2S
+- GoPro HERO10

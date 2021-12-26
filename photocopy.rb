@@ -52,12 +52,16 @@ puts "Where are the photos?"
 puts volumes.map.with_index(1) { |v, i| "#{i}: #{v}" }
 disk = volumes[gets.chomp.strip.to_i - 1]
 path = "/Volumes/#{disk}/DCIM"
-folders = Dir.entries(path).reject { |f| f.start_with?(".") }
+folders = Dir.entries(path).select { |f| File.directory?("#{path}/#{f}") && !f.start_with?(".") }
 
+IGNORED_EXTENSIONS = %w[.DS_Store .lrv .thm].freeze
 photos = []
 folders.each do |folder|
   folder_path = "#{path}/#{folder}"
-  entries = Dir.entries(folder_path).reject { |f| f.start_with?(".") }
+  entries = Dir.entries(folder_path).reject do |f|
+    extension = File.extname(f).downcase
+    f.start_with?(".") || IGNORED_EXTENSIONS.include?(extension)
+  end
   photos += entries.map { |entry| "#{folder_path}/#{entry}" }
 end
 exif = Exiftool.new(photos)
