@@ -85,8 +85,8 @@ class Copier
         if destinations[event]
           destination = "#{destinations[event]}/#{image_exif.file_name}"
           FileUtils.cp(image, destination)
-          photo.update(imported_at: Time.now)
         end
+        photo.update(imported_at: Time.now)
       end
       progressbar.increment
     end
