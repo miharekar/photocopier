@@ -2,7 +2,7 @@
 
 require "bundler"
 Bundler.require
-DB = Sequel.connect(adapter: :postgres, database: "photocopier", host: "localhost")
+DB = Sequel.connect("sqlite://photos.db")
 
 require_relative "copier"
 Copier.new.run

@@ -26,13 +26,11 @@ Feel free to fork and extend for your own needs.
 
 - [Ruby](https://www.ruby-lang.org/en/)
 - [ExifTool](https://exiftool.org/)
-- [PostgreSQL](https://www.postgresql.org/)
 
 ## Running
 
 Once you have all requirements on your system, you should clone this repo, and in your shell run the following commands:
 
 1. `bundle install`
-1. `createdb photocopier`
-1. `sequel -m migrations/ postgres://localhost/photocopier`
-1. `ruby photocopy.rb`
+1. `sequel -m migrations sqlite://photos.db`
+1. `ruby run.rb`
