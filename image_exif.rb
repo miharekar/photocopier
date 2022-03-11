@@ -10,7 +10,7 @@ class ImageExif
   end
 
   def created_at
-    exif[:date_time_original_civil] || exif[:create_date_civil]
+    DateTime.new(*created_at_string.split(/[\s.:]/).map(&:to_i))
   end
 
   def file_name
@@ -18,4 +18,10 @@ class ImageExif
   end
 
   def_delegator :exif, :[]
+
+  private
+
+  def created_at_string
+    exif[:date_time_original] || exif[:create_date]
+  end
 end
