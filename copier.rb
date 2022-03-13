@@ -10,13 +10,13 @@ class Copier
 
   def initialize
     find_images
-    @exif_data = Exiftool.new(images)
-    @events = detect_events
+    detect_events
   end
 
   def run
     create_destinations
     copy_images
+    unmount_volume
   end
 
   private
@@ -35,9 +35,15 @@ class Copier
       end
       @images += entries.map { |entry| "#{folder_path}/#{entry}" }
     end
+    puts "Parsing EXIF data..."
+    @exif_data = Exiftool.new(images)
   end
 
   def selected_volume
+    @selected_volume ||= select_volume
+  end
+
+  def select_volume
     volumes = Dir.entries("/Volumes").reject { |f| f.start_with?(".") }
     puts "Where are the images?"
     puts volumes.map.with_index(1) { |v, i| "#{i}: #{v}" }
@@ -45,7 +51,7 @@ class Copier
   end
 
   def detect_events
-    images.filter_map do |image|
+    @events = images.filter_map do |image|
       image_exif = ImageExif.new(exif_data.result_for(image))
       photo = Photo.find_from_exif(image_exif)
       next if photo&.imported?
@@ -90,6 +96,12 @@ class Copier
       end
       progressbar.increment
     end
+  end
+
+  def unmount_volume
+    info = `diskutil info "#{selected_volume}"`.split("\n")
+    node = info.find { |t| t.include?("Device Node") }.split.last
+    puts `diskutil unmount "#{node}"`
   end
 
   def create_progressbar
