@@ -54,7 +54,7 @@ class Copier
     @events = images.filter_map do |image|
       image_exif = ImageExif.new(exif_data.result_for(image))
       photo = Photo.find_from_exif(image_exif)
-      next if photo&.imported?
+      next if photo&.imported? || image_exif.created_at.nil?
 
       date = image_exif.created_at.strftime("%Y-%m-%d")
       model = image_exif[:model]
@@ -82,24 +82,29 @@ class Copier
   def copy_images
     progressbar = create_progressbar
     images.each do |image|
-      image_exif = ImageExif.new(exif_data.result_for(image))
-      photo = Photo.from_exif(image_exif)
-      unless photo.imported?
-        date = image_exif.created_at.strftime("%Y-%m-%d")
-        model = image_exif[:model]
-        event = "#{date}|#{model}"
-        if destinations[event]
-          destination = "#{destinations[event]}/#{image_exif.file_name}"
-          FileUtils.cp(image, destination)
-        end
-        photo.update(imported_at: Time.now)
-      end
       progressbar.increment
+
+      image_exif = ImageExif.new(exif_data.result_for(image))
+      next if image_exif.created_at.nil?
+
+      photo = Photo.from_exif(image_exif)
+      next if photo.imported?
+
+      date = image_exif.created_at.strftime("%Y-%m-%d")
+      model = image_exif[:model]
+      event = "#{date}|#{model}"
+      if destinations[event]
+        destination = "#{destinations[event]}/#{image_exif.file_name}"
+        FileUtils.cp(image, destination)
+      end
+      photo.update(imported_at: Time.now)
     end
   end
 
   def unmount_volume
     info = `diskutil info "#{selected_volume}"`.split("\n")
+    return if info.none?
+
     node = info.find { |t| t.include?("Device Node") }.split.last
     puts `diskutil unmount "#{node}"`
   end

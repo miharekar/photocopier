@@ -10,6 +10,8 @@ class ImageExif
   end
 
   def created_at
+    return if created_at_string.nil?
+
     DateTime.new(*created_at_string.split(/[\s.:]/).map(&:to_i))
   end
 
