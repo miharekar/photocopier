@@ -23,17 +23,9 @@ class Copier
 
   def find_images
     @images = []
-    path = "/Volumes/#{selected_volume}/DCIM"
-    folders = Dir.entries(path).select do |f|
-      File.directory?("#{path}/#{f}") && !f.start_with?(".")
-    end
-    folders.each do |folder|
-      folder_path = "#{path}/#{folder}"
-      entries = Dir.entries(folder_path).reject do |f|
-        extension = File.extname(f).downcase
-        f.start_with?(".") || IGNORED_EXTENSIONS.include?(extension)
-      end
-      @images += entries.map { |entry| "#{folder_path}/#{entry}" }
+    @images = Dir["/Volumes/#{selected_volume}/DCIM/**/*"].reject do |f|
+      extension = File.extname(f).downcase
+      extension.empty? || IGNORED_EXTENSIONS.include?(extension)
     end
     puts "Parsing EXIF data..."
     @exif_data = Exiftool.new(images)
