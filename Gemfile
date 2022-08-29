@@ -9,6 +9,7 @@ gem "sequel"
 gem "sqlite3"
 gem "pry"
 gem "ruby-progressbar"
+gem "plist"
 
 gem "rubocop", require: false
 gem "rubocop-performance", require: false

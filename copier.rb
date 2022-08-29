@@ -55,7 +55,7 @@ class Copier
   end
 
   def create_destinations
-    desktop = "#{ENV['HOME']}/Desktop"
+    desktop = "#{Dir.home}/Desktop"
     @destinations = {}
     events.each do |event|
       day, model = event.split("|")
@@ -94,11 +94,14 @@ class Copier
   end
 
   def unmount_volume
-    info = `diskutil info "#{selected_volume}"`.split("\n")
-    return if info.none?
+    list = Plist.parse_xml(`diskutil list -plist`)
+    disk = list["AllDisksAndPartitions"].find do |d|
+      d["Partitions"].find do |p|
+        p["MountPoint"] == "/Volumes/#{selected_volume}"
+      end
+    end
 
-    node = info.find { |t| t.include?("Device Node") }.split.last
-    puts `diskutil unmount "#{node}"`
+    puts `diskutil unmountDisk "#{disk["DeviceIdentifier"]}"`
   end
 
   def create_progressbar
