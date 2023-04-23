@@ -2,6 +2,7 @@
 
 require_relative "photo"
 require_relative "image_exif"
+require "debug"
 
 class Copier
   IGNORED_EXTENSIONS = %w[.DS_Store .lrv .thm].freeze
@@ -95,10 +96,9 @@ class Copier
 
   def unmount_volume
     list = Plist.parse_xml(`diskutil list -plist`)
+
     disk = list["AllDisksAndPartitions"].find do |d|
-      d["Partitions"].find do |p|
-        p["MountPoint"] == "/Volumes/#{selected_volume}"
-      end
+      d["MountPoint"] == "/Volumes/#{selected_volume}"
     end
 
     puts `diskutil unmountDisk "#{disk["DeviceIdentifier"]}"`

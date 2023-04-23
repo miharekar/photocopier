@@ -7,7 +7,7 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 gem "exiftool"
 gem "sequel"
 gem "sqlite3"
-gem "pry"
+gem "debug"
 gem "ruby-progressbar"
 gem "plist"
 
