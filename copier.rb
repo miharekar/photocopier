@@ -101,6 +101,12 @@ class Copier
       d["MountPoint"] == "/Volumes/#{selected_volume}"
     end
 
+    if disk.nil?
+      disk = list["AllDisksAndPartitions"].find do |d|
+        d["Partitions"].find { |p| p["MountPoint"] == "/Volumes/#{selected_volume}" }
+      end
+    end
+
     puts `diskutil unmountDisk "#{disk["DeviceIdentifier"]}"`
   end
 
